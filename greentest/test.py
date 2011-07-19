@@ -8,8 +8,10 @@ import http.client
          
 class TestSet:
   
+  #properties
   tests = {}
-  
+  trace = False
+    
   def run_tests(self):
     for test in self.tests:
       test.run_test()
@@ -40,6 +42,8 @@ class TestSet:
         resp = self.OKBLUE + '[' + self.OKGREEN + '  ok  ' + self.OKBLUE + ']' + self.ENDC
       elif status == AbstractTest.FAIL:
         resp = self.OKBLUE + '[' + self.FAILRED  + ' fail ' + self.OKBLUE + ']' + self.ENDC
+      elif status == AbstractTest.TRACE and not self.trace:
+        continue
       else:
         resp = self.OKBLUE + '[' + self.WARNING  + '  !!  ' + self.OKBLUE + ']' + self.ENDC
         
@@ -97,7 +101,6 @@ class AbstractTest:
       self.postData = self.generator.generate_data() 
       
     self.__make_request()
-    print(self.successConditions)
     for c in self.successConditions:
       if c.run_check(self):
         self.resultTestMessage.append( (self.PASS , 'Test {0} passed'.format(c.description)) )
@@ -108,10 +111,7 @@ class AbstractTest:
     return True  
       
   
-  def __make_request(self):  
-    #encodedData = None
-    #if self.postData != None:
-     
+  def __make_request(self):       
     connection = http.client.HTTPConnection(self.host,self.port)
     for name,value in self.headers:
       connection.putheader(name,value)    
@@ -121,14 +121,13 @@ class AbstractTest:
     self.resultBody = result.read()
     self.resultHeaders = result.getheaders()
     
-    #if trace TODO
+    #Trace Debugg'in
     self.resultTestMessage.extend([
       (self.TRACE,'Request: {0} {1}:{2}/{3}'.format(self.requestType,self.host,self.port,self.path)),
       (self.TRACE,'Body: {0}'.format(self.postData)),
-      (self.TRACe,'Response Status: {0}'.format(self.resultStatus)),
-      (self.TRACE,'Response Body: {0}'.format(self.resultBody))
-      #(self.INFO,),                             
-                                  ])    
+      (self.TRACE,'Response Status: {0}'.format(self.resultStatus)),
+      (self.TRACE,'Response Body: {0}'.format(self.resultBody))                             
+    ])    
   
   
   

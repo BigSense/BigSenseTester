@@ -21,7 +21,7 @@ def logfile_arg():
 
 
 if __name__ == '__main__':
-  parser = OptionParser(usage="%prog [-l logfile] [-v (debug,info,warn,error)] <testconfig> <testset>",
+  parser = OptionParser(usage="%prog [-t] [-l logfile] [-v (debug,info,warn,error)] <testconfig> <testset>",
                         description="A script for running automated functional tests against the GreenOven Web Service",
                         version="%prog 0.1", epilog='Copyright 2011 Sumit Khanna. GNU GPLv3. PenguinDreams.org')
   parser.add_option('-t','--trace',action='store_true',dest='trace',help='Display all request and response information for each test')
@@ -34,8 +34,8 @@ if __name__ == '__main__':
 
   if len(args) != 2:
      parser.error('You must specify a test configuration file and a test set')
-  elif (not os.path.isfile(argv[0])):
-     parser.error('Can not find configuration file {1}'.format(argv[0]))
+  elif (not os.path.isfile(args[0])):
+     parser.error('Can not find configuration file {1}'.format(args[0]))
   else:
 
       #-l option
@@ -57,8 +57,9 @@ if __name__ == '__main__':
       logging.getLogger('').addHandler(logfile)
   
   
-    load_config(argv[0])
-    set = get_class(argv[1])
+    load_config(args[0])
+    set = get_class(args[1])
+    set.trace = options.trace
     set.run_tests()
       #testa = get_class('BasicTest')
       #print ('Result {0}'.format(testa.run_test()))

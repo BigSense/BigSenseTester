@@ -41,7 +41,7 @@ class GreenXMLDataGenerator(AbstractGenerator):
       dunits = doc.createElement('units')
       ddata = doc.createElement('data')
 
-      did.appendChild(doc.createTextNode(s['id']()))
+      did.appendChild(doc.createTextNode(s['id']))
       dtype.appendChild(doc.createTextNode(s['type']))
       dunits.appendChild(doc.createTextNode(s['units']))
       ddata.appendChild(doc.createTextNode(s['data']))
