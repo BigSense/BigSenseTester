@@ -2,9 +2,9 @@
 import configparser
 import logging
 
-loader_config = configparser.RawConfigParser()
+config = configparser.RawConfigParser()
 #remove case insensitivity 
-loader_config.optionxform = lambda option: option
+config.optionxform = lambda option: option
 
 loader_classes = {}
 
@@ -18,35 +18,59 @@ def load_obj(name):
     return getattr(mod,clss)()
 
 def load_config(configFile):
-    loader_config.readfp(open(configFile,'r'))
+    config.readfp(open(configFile,'r'))
 
+def set_args(object,key,value):
+    arg = None
+    if '\\' in value:
+      (optype,opt) = value.split('\\')
+      if optype == 'class-ref':
+        if opt.startswith('{'):
+          arg = []
+          for c in opt.strip('{}').split(','):
+            arg.append(get_class(c))
+        else:            
+          arg = get_class(opt)          
+    else:
+      arg = value
+    
+    logging.debug('Setting attribute {0} to {1} for class {2}'.format(key,arg,object))
+    setattr(object,key,arg)
+      
+
+def get_class_name(bean):
+  if not config.has_option(bean, 'inherit'):
+    return config.get(bean,'class')
+  if config.has_option(bean, 'class'):
+    return config.get(bean,'class')
+  return get_class_name(config.get(bean,'inherit'))
+    
+        
 def get_class(idu):
   if idu in loader_classes:
     logging.debug('Loading Cached Object ' + idu)
     return loader_classes[idu]
 
-  bean = loader_config.items(idu)
-  name = loader_config.get(idu,'class')
+  bean = config.items(idu)   
+  name = get_class_name(idu)
+  
   obj = load_obj(name)
   logging.debug('Created Object {0}'.format(name))
+  
+  #inherited 
+  #  to do this correctly we really want to roll up
+  #  and not down. This works for now. 
+  cur = idu
+  while(config.has_option(cur,'inherit')):
+    cur = config.get(idu,'inherit')
+    for (skey,svalue) in config.items(cur):
+      set_args(obj,skey,svalue)        
+  
   for (key,value) in bean:
-    if key == 'class':
+    if key == 'class' or key == 'inherit':
       continue
     else:
-      arg = None
-      if '\\' in value:
-        (optype,opt) = value.split('\\')
-        if optype == 'class-ref':
-          if opt.startswith('{'):
-            arg = []
-            for c in opt.strip('{}').split(','):
-              arg.append(get_class(c))
-          else:            
-            arg = get_class(opt)
-      else:
-        arg = value
-
-      logging.debug('Setting attribute {0} to {1} for class {2}'.format(key,arg,obj))
-      setattr(obj,key,arg)
+      set_args(obj,key,value)
 
   return obj
+
