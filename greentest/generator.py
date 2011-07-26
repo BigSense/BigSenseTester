@@ -20,39 +20,46 @@ class AbstractGenerator:
 
 class GreenXMLDataGenerator(AbstractGenerator):
   
+  numPackages = 2
+  
   def generate_data(self):
     doc = Document()
     root = doc.createElement('GreenData')
 
-    ts = doc.createElement('timestamp')
-    ts.setAttribute('zone','UTC')
-    ts.appendChild(doc.createTextNode(str(time.time())))
+    for i in range(self.numPackages):
+      pack = doc.createElement('package')
 
-    sens = doc.createElement('Sensors')
+      ts = doc.createElement('timestamp')
+      ts.setAttribute('zone','UTC')
+      ts.appendChild(doc.createTextNode(str(time.time())))
+  
+      sens = doc.createElement('sensors')
+  
+      sensors = [{'id':'AGEWA99B','type':'Temperature','units':'C','data':'34'},
+                 {'id':'AGEWA45C','type':'Temperature','units':'C','data':'36'},
+                 {'id':'DFERWE9F','type':'Temperature','units':'C','data':'30'}]
+      for s in sensors:
+        senNode = doc.createElement('sensor')
+  
+        did = doc.createElement('id')
+        dtype = doc.createElement('type')
+        dunits = doc.createElement('units')
+        ddata = doc.createElement('data')
+  
+        did.appendChild(doc.createTextNode(s['id']))
+        dtype.appendChild(doc.createTextNode(s['type']))
+        dunits.appendChild(doc.createTextNode(s['units']))
+        ddata.appendChild(doc.createTextNode(s['data']))
+   
+        senNode.appendChild(did)
+        senNode.appendChild(dtype)
+        senNode.appendChild(dunits)
+        senNode.appendChild(ddata)
+        sens.appendChild(senNode)
 
-    sensors = [{'id':'AGEWA99B','type':'Temperature','units':'C','data':'34'},
-               {'id':'AGEWA45C','type':'Temperature','units':'C','data':'36'},
-               {'id':'DFERWE9F','type':'Temperature','units':'C','data':'30'}]
-    for s in sensors:
-      senNode = doc.createElement('Sensor')
-
-      did = doc.createElement('id')
-      dtype = doc.createElement('type')
-      dunits = doc.createElement('units')
-      ddata = doc.createElement('data')
-
-      did.appendChild(doc.createTextNode(s['id']))
-      dtype.appendChild(doc.createTextNode(s['type']))
-      dunits.appendChild(doc.createTextNode(s['units']))
-      ddata.appendChild(doc.createTextNode(s['data']))
- 
-      senNode.appendChild(did)
-      senNode.appendChild(dtype)
-      senNode.appendChild(dunits)
-      senNode.appendChild(ddata)
-      sens.appendChild(senNode)
-
-    root.appendChild(ts)
-    root.appendChild(sens)
+      pack.appendChild(ts)
+      pack.appendChild(sens)
+      root.appendChild(pack)
+    
     doc.appendChild(root)
     return doc.toprettyxml(indent=' ')
