@@ -29,9 +29,9 @@ class GreenXMLDataGenerator(AbstractGenerator):
     for i in range(self.numPackages):
       pack = doc.createElement('package')
 
-      ts = doc.createElement('timestamp')
-      ts.setAttribute('zone','UTC')
-      ts.appendChild(doc.createTextNode(str(time.time())))
+      pack.setAttribute("timestamp", str(time.time()))
+      pack.setAttribute("timezone", "UTC")
+      pack.setAttribute("id","00:11:22:33:44:55:66")
   
       sens = doc.createElement('sensors')
   
@@ -40,24 +40,16 @@ class GreenXMLDataGenerator(AbstractGenerator):
                  {'id':'DFERWE9F','type':'Temperature','units':'C','data':'30'}]
       for s in sensors:
         senNode = doc.createElement('sensor')
-  
-        did = doc.createElement('id')
-        dtype = doc.createElement('type')
-        dunits = doc.createElement('units')
+        senNode.setAttribute('id',s['id'])
+        senNode.setAttribute('type',s['type'])
+        senNode.setAttribute('units',s['units'])
+        
         ddata = doc.createElement('data')
-  
-        did.appendChild(doc.createTextNode(s['id']))
-        dtype.appendChild(doc.createTextNode(s['type']))
-        dunits.appendChild(doc.createTextNode(s['units']))
         ddata.appendChild(doc.createTextNode(s['data']))
-   
-        senNode.appendChild(did)
-        senNode.appendChild(dtype)
-        senNode.appendChild(dunits)
+  
         senNode.appendChild(ddata)
         sens.appendChild(senNode)
 
-      pack.appendChild(ts)
       pack.appendChild(sens)
       root.appendChild(pack)
     
