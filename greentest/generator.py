@@ -20,7 +20,7 @@ class AbstractGenerator:
 
 class GreenXMLDataGenerator(AbstractGenerator):
   
-  numPackages = 2
+  numPackages = 1
   
   def generate_data(self):
     doc = Document()

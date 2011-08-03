@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import configparser
 import logging
+import sys
 
 config = configparser.RawConfigParser()
 #remove case insensitivity 
@@ -21,6 +22,8 @@ def load_config(configFile):
     config.readfp(open(configFile,'r'))
 
 def set_args(object,key,value):
+    print("{0}-{1}-{2}".format(object,key,value))
+    sys.stdout.flush()
     arg = None
     if '\\' in value:
       (optype,opt) = value.split('\\')
@@ -38,7 +41,7 @@ def set_args(object,key,value):
     setattr(object,key,arg)
       
 
-def get_class_name(bean):
+def get_class_name(bean): 
   if not config.has_option(bean, 'inherit'):
     return config.get(bean,'class')
   if config.has_option(bean, 'class'):

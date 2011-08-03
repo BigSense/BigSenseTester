@@ -21,11 +21,11 @@ class StatusSuccessCondition(AbstractSuccessCondition):
   status = 'Unimplemented'
   
   def run_check(self,test : AbstractTest):
-    return test.resultStatus == self.code
+    return int(test.resultStatus) == int(self.code)
   
 class HeaderSuccessCondition(AbstractSuccessCondition):
   
-  description = property(lambda self: 'Header {0} (min/max: {1}/{2}'.format(self.header,self.min,self.max))
+  description = property(lambda self: 'Header {0} (min/max: {1}/{2})'.format(self.header,self.min,self.max))
   header = None
   min = 1
   max = 1
@@ -36,10 +36,11 @@ class HeaderSuccessCondition(AbstractSuccessCondition):
       return False
     
     count = 0
-    for h in test.resultHeaders:
-      if h == self.header:
+    for hd,val in test.resultHeaders:
+      if hd == self.header:
         count += 1
-    return count > min and count < max
+        print(count)
+    return count >= int(self.min) and count <= int(self.max)
   
   
   

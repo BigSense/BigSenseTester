@@ -126,9 +126,14 @@ class AbstractTest:
       (self.TRACE,'Request: {0} {1}:{2}/{3}'.format(self.requestType,self.host,self.port,self.path)),
       (self.TRACE,'Body: {0}'.format(self.postData)),
       (self.TRACE,'Response Status: {0}'.format(self.resultStatus)),
-      (self.TRACE,'Response Body: {0}'.format(self.resultBody))                             
+    ])
+    for hd,val in self.resultHeaders:
+      self.resultTestMessage.extend([
+        (self.TRACE,'Response Header {0}: {1}'.format(hd,val)),                                     
     ])    
-  
+    self.resultTestMessage.extend([
+      (self.TRACE,'Response Body: {0}'.format(self.resultBody))
+    ])                               
   
   
 

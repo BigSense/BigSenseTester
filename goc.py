@@ -38,7 +38,7 @@ if __name__ == '__main__':
      parser.error('Can not find configuration file {1}'.format(args[0]))
   else:
 
-      #-l option
+    #-l option
     if options.level.upper() in ['DEBUG','INFO','WARN','ERROR']:
       lvl = getattr(logging, options.level.upper())
       logging.getLogger('').setLevel(lvl)
@@ -61,9 +61,3 @@ if __name__ == '__main__':
     set = get_class(args[1])
     set.trace = options.trace
     set.run_tests()
-      #testa = get_class('BasicTest')
-      #print ('Result {0}'.format(testa.run_test()))
-      #print ('Result {0}'.format(testa.resultTestMessage))
-      
-      #set = get_class('SampleTestSet')  
-      #set.run_tests()
