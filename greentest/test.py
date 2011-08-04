@@ -6,16 +6,7 @@ Created on Jun 29, 2011
 
 import http.client
          
-class TestSet:
-  
-  #properties
-  tests = {}
-  trace = False
-    
-  def run_tests(self):
-    for test in self.tests:
-      test.run_test()
-      self.write_test_results(test.description,test.resultTestMessage)         
+class TestSet:         
             
   #Display Color Codes
   HEADER = '\033[95m'
@@ -33,7 +24,15 @@ class TestSet:
   LEVEL_TRACE = 50
   
   #properties
-  output_level = LEVEL_INFO 
+  def __init__(self):
+    self.tests = {}
+    self.trace = False
+    self.output_level = TestSet.LEVEL_INFO  
+
+  def run_tests(self):
+    for test in self.tests:
+      test.run_test()
+      self.write_test_results(test.description,test.resultTestMessage)
 
   def write_test_results(self,title,tuples):
     print(self.HEADER + title + self.ENDC)
@@ -61,25 +60,26 @@ class AbstractTest:
   INFO  = 4
   TRACE = 5
 
-  #properties 
-  description = 'ChangeMe: Default Abstract Description'
-  requestType = 'GET'
-  successConditions = []
-  host = None
-  port = 80
-  path = ''
-  postData = None
-  parentTest = None
-  headers = {}
-  generator = None
+  def __init__(self):
+    #properties 
+    self.description = 'ChangeMe: Default Abstract Description'
+    self.requestType = 'GET'
+    self.successConditions = []
+    self.host = None
+    self.port = 80
+    self.path = ''
+    self.postData = None
+    self.parentTest = None
+    self.headers = {}
+    self.generator = None
+    
+    #results
+    self.resultBody = None
+    self.resultStatus = None
+    self.resultHeaders = None
+    self.resultTestStatus = AbstractTest.READY  
+    self.resultTestMessage = [] #list of tuples [(PASS/FAIL,message)]
   
-  #results
-  resultBody = None
-  resultStatus = None
-  resultHeaders = None
-  resultTestStatus = READY  
-  resultTestMessage = [] #list of tuples [(PASS/FAIL,message)]
-
   
   def run_test(self):
     #1) run parent if necessary
@@ -87,30 +87,28 @@ class AbstractTest:
     #3) make request
     #4) run checks
     if self.parentTest != None:
-      if self.parentTest.resultTestStatus == self.READY:
+      if self.parentTest.resultTestStatus == AbstractTest.READY:
         print("Running Parent Tests")
         self.parentTest.run_test()
-      if self.parentTest.resultTestStatus == self.FAIL:
-        self.resultTestMessage.append( (self.FAIL,'{0} (parent) Test Failed'.format(self.parentTest.description)) )
+      if self.parentTest.resultTestStatus == AbstractTest.FAIL:
+        self.resultTestMessage.append( (AbstractTest.FAIL,'{0} (parent) Test Failed'.format(self.parentTest.description)) )
         return False
-      if self.parentTest.resultTestStatus == self.PASS:
+      if self.parentTest.resultTestStatus == AbstractTest.PASS:
         if self.generator != None:
           self.generator.set_result_infomration(self.parentTest.resultStatus, self.parentTest.resultHeaders, self.parentTest.resultBody)
 
     if self.generator != None:
       self.postData = self.generator.generate_data() 
-      
-    print("AA{0}".format(self.resultTestMessage))
-    #self.resultTestMessage = []  
+       
     self.__make_request()
     for c in self.successConditions:
       if c.run_check(self):
-        self.resultTestMessage.append( (self.PASS , 'Test {0} passed'.format(c.description)) )
+        self.resultTestMessage.append( (AbstractTest.PASS , 'Test {0} passed'.format(c.description)) )
       else:
-        self.resultTestMessage.append( (self.FAIL, 'Test {0} failed'.format(c.description)) )
+        self.resultTestMessage.append( (AbstractTest.FAIL, 'Test {0} failed'.format(c.description)) )
         return False
     
-    self.resultTestStatus == self.PASS
+    self.resultTestStatus = AbstractTest.PASS
     return True  
       
   

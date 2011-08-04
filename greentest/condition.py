@@ -3,22 +3,26 @@ Created on Jul 5, 2011
 
 @author: khannast
 '''
-import http.client
 from greentest.test import AbstractTest
 
 class AbstractSuccessCondition:
   
-  description = 'Unimplemented'
+  description = "Unimplemented"
   
-  def run_check(self,test : AbstractTest):
-    
+  def __init__(self):
+    pass
+  
+  def run_check(self,test : AbstractTest):    
     return False
 
 class StatusSuccessCondition(AbstractSuccessCondition):
   
   description = property(lambda self: 'Status {0} {1}'.format(self.code, self.status) )
-  code = -1
-  status = 'Unimplemented'
+  
+  def __init__(self):
+    AbstractSuccessCondition.__init__(self)    
+    self.code = -1
+    self.status = 'Unimplemented'
   
   def run_check(self,test : AbstractTest):
     return int(test.resultStatus) == int(self.code)
@@ -26,9 +30,12 @@ class StatusSuccessCondition(AbstractSuccessCondition):
 class HeaderSuccessCondition(AbstractSuccessCondition):
   
   description = property(lambda self: 'Header {0} (min/max: {1}/{2})'.format(self.header,self.min,self.max))
-  header = None
-  min = 1
-  max = 1
+  
+  def __init__(self):
+    AbstractSuccessCondition.__init__(self)    
+    self.header = None
+    self.min = 1
+    self.max = 1
   
   def run_check(self, test : AbstractTest):
     

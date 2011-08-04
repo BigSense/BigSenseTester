@@ -9,6 +9,9 @@ import time
 
 class AbstractGenerator:
   
+  def __init__(self):
+    pass
+  
   def set_result_infomration(self, status, headers, body):
     self._status = status
     self._headers = headers
@@ -20,7 +23,9 @@ class AbstractGenerator:
 
 class GreenXMLDataGenerator(AbstractGenerator):
   
-  numPackages = 1
+  def __init__(self):
+    AbstractGenerator.__init__(self)
+    self.numPackages = 1
   
   def generate_data(self):
     doc = Document()

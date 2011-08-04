@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 import configparser
 import logging
-import sys
 
 config = configparser.RawConfigParser()
 #remove case insensitivity 
 config.optionxform = lambda option: option
 
-#loader_classes = {}
+#Object Cache
+loader_classes = {}
 
 #Taken from
 # http://stackoverflow.com/questions/547829/how-to-dynamically-load-a-python-class
@@ -48,9 +48,9 @@ def get_class_name(bean):
     
         
 def get_class(idu):
-  #if idu in loader_classes:
-  #  logging.debug('Loading Cached Object ' + idu)
-  #  return loader_classes[idu]
+  if idu in loader_classes:
+    logging.debug('Loading Cached Object ' + idu)
+    return loader_classes[idu]
 
   bean = config.items(idu)   
   name = get_class_name(idu)
@@ -74,5 +74,6 @@ def get_class(idu):
     else:
       set_args(obj,key,value)
 
+  loader_classes[idu] = obj
   return obj
 
