@@ -26,7 +26,7 @@ class GreenXMLDataGenerator(AbstractGenerator):
     doc = Document()
     root = doc.createElement('GreenData')
 
-    for i in range(self.numPackages):
+    for i in range(int(self.numPackages)):
       pack = doc.createElement('package')
 
       pack.setAttribute("timestamp", str(time.time()))

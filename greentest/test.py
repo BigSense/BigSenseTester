@@ -86,9 +86,9 @@ class AbstractTest:
     #2) run couplers 
     #3) make request
     #4) run checks
-    
     if self.parentTest != None:
       if self.parentTest.resultTestStatus == self.READY:
+        print("Running Parent Tests")
         self.parentTest.run_test()
       if self.parentTest.resultTestStatus == self.FAIL:
         self.resultTestMessage.append( (self.FAIL,'{0} (parent) Test Failed'.format(self.parentTest.description)) )
@@ -100,6 +100,8 @@ class AbstractTest:
     if self.generator != None:
       self.postData = self.generator.generate_data() 
       
+    print("AA{0}".format(self.resultTestMessage))
+    #self.resultTestMessage = []  
     self.__make_request()
     for c in self.successConditions:
       if c.run_check(self):
@@ -108,6 +110,7 @@ class AbstractTest:
         self.resultTestMessage.append( (self.FAIL, 'Test {0} failed'.format(c.description)) )
         return False
     
+    self.resultTestStatus == self.PASS
     return True  
       
   

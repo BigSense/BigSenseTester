@@ -39,7 +39,6 @@ class HeaderSuccessCondition(AbstractSuccessCondition):
     for hd,val in test.resultHeaders:
       if hd == self.header:
         count += 1
-        print(count)
     return count >= int(self.min) and count <= int(self.max)
   
   
