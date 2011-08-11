@@ -34,7 +34,8 @@ class GreenXMLDataGenerator(AbstractGenerator):
     for i in range(int(self.numPackages)):
       pack = doc.createElement('package')
 
-      pack.setAttribute("timestamp", str(time.time()))
+      #We want time as a long as number of milisecongs
+      pack.setAttribute("timestamp", str(round(time.time()* 1000)))
       pack.setAttribute("timezone", "UTC")
       pack.setAttribute("id","00:11:22:33:44:55:66")
   
