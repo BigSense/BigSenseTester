@@ -5,6 +5,7 @@ Created on Jul 18, 2011
 '''
 from xml.dom.minidom import Document
 import time
+import base64
 
 
 class AbstractGenerator:
@@ -20,35 +21,47 @@ class AbstractGenerator:
   def generate_data(self):
     return "Unimplemented"
 
+class RegistrationDataGenerator(AbstractGenerator):
+  
+  def __init__(self):
+    AbstractGenerator.__init__(self)
+    
+  def generate_date(self):
+    doc = Document()
+    root = doc.createElement('AltaRegister')
+    
+    doc.appendChild(root)
+    return doc.toprettyxml(indent=' ')
+    
 
-class GreenXMLDataGenerator(AbstractGenerator):
+class XMLDataGenerator(AbstractGenerator):
   
   def __init__(self):
     AbstractGenerator.__init__(self)
     self.numPackages = 1
+    self.sensors = []
+    self.name = "FunctionalTester"
   
   def generate_data(self):
     doc = Document()
-    root = doc.createElement('GreenData')
+    root = doc.createElement('AgraData')
 
     for i in range(int(self.numPackages)):
       pack = doc.createElement('package')
 
       #We want time as a long as number of milisecongs
       pack.setAttribute("timestamp", '{0}'.format(round(time.time()* 1000)))
-      pack.setAttribute("timezone", "UTC")
-      pack.setAttribute("id","00:11:22:33:44:55:66")
+      pack.setAttribute("id",self.name)
   
       sens = doc.createElement('sensors')
   
-      sensors = [{'id':'AGEWA99B','type':'Temperature','units':'C','data':'34'},
-                 {'id':'AGEWA45C','type':'Temperature','units':'C','data':'36'},
-                 {'id':'DFERWE9F','type':'Temperature','units':'C','data':'30'}]
-      for s in sensors:
+      for s in self.sensors:
         senNode = doc.createElement('sensor')
-        senNode.setAttribute('id',s['id'])
+        if s['id'] != '':
+          senNode.setAttribute('id',s['id'])
         senNode.setAttribute('type',s['type'])
         senNode.setAttribute('units',s['units'])
+        senNode.setAttribute('timestamp',str(round(time.time()*1000)))
         
         ddata = doc.createElement('data')
         ddata.appendChild(doc.createTextNode(s['data']))
@@ -60,4 +73,30 @@ class GreenXMLDataGenerator(AbstractGenerator):
       root.appendChild(pack)
     
     doc.appendChild(root)
-    return doc.toprettyxml(indent=' ')
+    return doc.toxml()
+  
+class OneWireXMLDataGenerator(XMLDataGenerator):
+  
+  def __init__(self):
+    XMLDataGenerator.__init__(self)     
+    self.name = "OneWireTester"
+    self.sensors = [{'id':'AGEWA99B','type':'Temperature','units':'C','data':'34'},
+        {'id':'WTR001AD-V','type':'Volume','units':'ml','data':'50'},
+        {'id':'WTR001AD-FR','type':'FlowRate','units':'ml/s','data':'2.45'}]
+
+
+class PhotoXMLDataGenerator(XMLDataGenerator):
+  
+  def __init__(self):
+    XMLDataGenerator.__init__(self)
+    self.name = 'PhotoTester'
+    self.id = ''
+    self.photoFile = None
+    
+  def generate_data(self):
+    fd = open(self.photoFile,'rb')
+    image = fd.read()
+    fd.close()
+    encodedImage = base64.encodebytes(image).decode("utf-8")
+    self.sensors = [{'id':self.id,'type':'Photo','units':'NPhotoU','data':encodedImage}]
+    return XMLDataGenerator.generate_data(self)    

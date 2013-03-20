@@ -5,6 +5,11 @@ Created on Jun 29, 2011
 '''
 
 import http.client
+import time
+from datetime import date, timedelta
+import sys
+from greentest.condition import StatusSuccessCondition, WellFormedXMLSuccessCondition, HTMLResponseSuccessCondition, NumberColumnsSuccessCondition,\
+  NumberRowsSuccessCondition, NumberXMLElementsSuccessCondition
          
 class TestSet:         
             
@@ -28,14 +33,43 @@ class TestSet:
     self.tests = {}
     self.trace = False
     self.output_level = TestSet.LEVEL_INFO  
+    self.name = "Default Name"
+    self.allPassed = True
+
+  def set_on_fail(self,ret):
+    if self.allPassed and ret is not None:
+      self.allPassed = ret
 
   def run_tests(self):
+
+    self.allPassed = True
     for test in self.tests:
-      test.run_test()
-      self.write_test_results(test.description,test.resultTestMessage)
+
+      if isinstance(test,TestSet):
+        print(self.OKBLUE + test.name + self.ENDC)
+        test.trace = self.trace
+        self.set_on_fail(test.run_tests())
+
+      elif isinstance(test,AbstractTest):
+
+        #parent Test
+        if test.parentTest != None:
+          if test.parentTest.resultTestStatus == AbstractTest.READY:
+            self.set_on_fail(test.parentTest.run_test())
+            self.write_test_results(test.parentTest.description,test.parentTest.resultTestMessage)
+                    
+        #current Test      
+        self.set_on_fail(test.run_test())
+        self.write_test_results(test.description,test.resultTestMessage)
+        
+      else:
+        self.allPassed = False
+        print("Unknown object in test set {0}".format(test))
+
+    return self.allPassed
 
   def write_test_results(self,title,tuples):
-    print(self.HEADER + title + self.ENDC)
+    print("  " + self.HEADER + title + self.ENDC)
     for (status,message) in tuples:
       if status == AbstractTest.PASS:
         resp = self.OKBLUE + '[' + self.OKGREEN + '  ok  ' + self.OKBLUE + ']' + self.ENDC
@@ -47,6 +81,7 @@ class TestSet:
         resp = self.OKBLUE + '[' + self.WARNING  + '  !!  ' + self.OKBLUE + ']' + self.ENDC
         
       print('   ' + message.ljust(85) + resp)
+      sys.stdout.flush()
 
               
 
@@ -72,6 +107,8 @@ class AbstractTest:
     self.parentTest = None
     self.headers = {}
     self.generator = None
+    self.couplers = None
+    self.security = None
     
     #results
     self.resultBody = None
@@ -82,23 +119,24 @@ class AbstractTest:
   
   
   def run_test(self):
-    #1) run parent if necessary
+    #1) check parent test
     #2) run couplers 
     #3) make request
     #4) run checks
-    if self.parentTest != None:
-      if self.parentTest.resultTestStatus == AbstractTest.READY:
-        print("Running Parent Tests")
-        self.parentTest.run_test()
-      if self.parentTest.resultTestStatus == AbstractTest.FAIL:
-        self.resultTestMessage.append( (AbstractTest.FAIL,'{0} (parent) Test Failed'.format(self.parentTest.description)) )
-        return False
-      if self.parentTest.resultTestStatus == AbstractTest.PASS:
-        if self.generator != None:
-          self.generator.set_result_infomration(self.parentTest.resultStatus, self.parentTest.resultHeaders, self.parentTest.resultBody)
+
+    if self.parentTest != None and self.parentTest.resultTestStatus == AbstractTest.FAIL:
+      self.resultTestMessage.append( (AbstractTest.FAIL,'{0} (parent) Test Failed'.format(self.parentTest.description)) )
+      return False
+
+    if self.couplers != None:
+      for c in self.couplers:
+        c.couple_testers(self.parentTest,self)
 
     if self.generator != None:
-      self.postData = self.generator.generate_data() 
+      self.postData = self.generator.generate_data()
+
+    if self.security != None:
+      self.postData = self.security.process_data(self.postData)
        
     self.__make_request()
     for c in self.successConditions:
@@ -137,4 +175,134 @@ class AbstractTest:
     ])                               
   
   
+class AbstractTimeQueryTest(AbstractTest):
+  
+  def __init__(self):
+    self.stepHours = 1
+    self.stepDays  = 1
+    self._path = ''
+    AbstractTest.__init__(self)
 
+  
+  # %tsb - Unix Time Stamp Before  (now - stepHours, default to 1 hour)
+  # %tsa - Unix Time Stamp After   (now + stepHours)
+  # %db  - Date Before in YYYYMMDD (now - stepDays, default to 1 day)
+  # %da  - Date After  in YYYYMMDD (now + stepDays)
+  def _set_path(self,path):
+    if path != '': #Base constructor
+      now = int(time.time())    
+      t = path.replace('%tsb', str((now - 86400) * int(self.stepHours)) )
+      t = t.replace('%tsa',    str((now + 86400) * int(self.stepHours)) )
+      t = t.replace('%db', (date.today() - timedelta(int(self.stepDays))).strftime('%Y%m%d'))
+      t = t.replace('%da', (date.today() + timedelta(int(self.stepDays))).strftime('%Y%m%d'))
+      self._path = t  
+     
+  path = property(lambda self : self._path,_set_path)
+    
+
+    
+class MultiFormatTestSet(TestSet):
+  
+  def __init__(self):
+    TestSet.__init__(self)
+    
+    self.baseTest = None
+    self.basePath = ''
+    self.timeQueryPath = False
+    self.stepHours = 1
+    self.stepDays  = 1    
+    
+    #Formats
+    self.flatXMLSupported = True
+    self.tableHTMLSupported = True
+    self.csvSupported = True
+    self.tabSupported = True
+    self.agraXMLSupported = False
+    
+    #Conversions
+    self.unitsSupported = True
+    self.timezoneSupported = True    
+    
+    #Test Results
+    self.numColumns = -1
+    self.numRows = -1
+  
+  def _copy_base_test(self,extension):  
+      t = AbstractTimeQueryTest() if bool(self.timeQueryPath) else AbstractTest()
+      t.host = self.baseTest.host
+      t.port = self.baseTest.port
+      t.stepHours = self.stepHours
+      t.stepDays = self.stepDays
+      t.path = self.basePath + '.' + extension
+      t.description = '{0} [{1}]'.format(self.name,extension)
+      ok = StatusSuccessCondition()
+      ok.code = 200
+      ok.status = 'OK'
+      t.successConditions.append(ok)
+      return t
+    
+  def add_conversions(self,test,type):
+    """Takes a single Abstract Test and returns a list of tests for 
+    specific conversions based on the unitsSupported and timezoneSupported
+    members. Type should be csv,txt or flat.xml.
+    Returned list does include original test"""
+    if bool(self.unitsSupported):
+      pass
+    if bool(self.timezoneSupported):
+      pass
+    
+          
+  def run_tests(self):
+    
+    self.tests = []
+    
+    if bool(self.flatXMLSupported):
+      t = self._copy_base_test('flat.xml')  
+      xc = NumberXMLElementsSuccessCondition()
+      
+      xc.searchXPath = './/row[1]/*'
+      xc.numElements = self.numColumns    
+      if int(self.numColumns) != -1 : t.successConditions.append(xc)
+            
+      xr = NumberXMLElementsSuccessCondition()
+      xr.searchXPath = './/row'
+      xr.numElements = self.numRows
+      if int(self.numRows) != -1 : t.successConditions.append(xr)
+      
+      t.successConditions.append(WellFormedXMLSuccessCondition())      
+      self.tests.append(t)
+    if bool(self.tableHTMLSupported):
+      t = self._copy_base_test('table.html')
+      t.successConditions.append(HTMLResponseSuccessCondition())
+      self.tests.append(t)
+    if bool(self.csvSupported):
+      t = self._copy_base_test('csv')
+      c = NumberColumnsSuccessCondition()
+      c.delimiter = 'comma'
+      c.numColumns = self.numColumns
+      r = NumberRowsSuccessCondition()
+      r.numRows = self.numRows
+      r.header = True
+      if int(self.numRows) != -1 : t.successConditions.append(r)
+      if int(self.numColumns) != -1: t.successConditions.append(c) 
+      self.tests.append(t)
+    if bool(self.tabSupported):
+      t = self._copy_base_test('txt')
+      c = NumberColumnsSuccessCondition()
+      c.delimiter = 'tab'
+      c.numColumns = self.numColumns
+      r = NumberRowsSuccessCondition()
+      r.numRows = self.numRows
+      r.header = True
+      if int(self.numRows) != -1 : t.successConditions.append(r)
+      if int(self.numColumns) != -1: t.successConditions.append(c) 
+      self.tests.append(t)
+    if bool(self.agraXMLSupported):
+      t = self._copy_base_test('agra.xml')      
+      t.successConditions.append(WellFormedXMLSuccessCondition())      
+      self.tests.append(t)
+    
+    TestSet.run_tests(self)
+    
+    
+    

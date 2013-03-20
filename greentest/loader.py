@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import configparser
 import logging
+import os
+import glob
 
 config = configparser.RawConfigParser()
 #remove case insensitivity 
@@ -18,8 +20,8 @@ def load_obj(name):
     mod = __import__(path,globals(),locals(),clss)
     return getattr(mod,clss)()
 
-def load_config(configFile):
-    config.readfp(open(configFile,'r'))
+def load_config():
+  config.read( glob.glob( os.path.join('config/', '*.config') ) )
 
 def set_args(object,key,value):
     arg = None
