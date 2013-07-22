@@ -190,9 +190,9 @@ class AbstractTimeQueryTest(AbstractTest):
   # %da  - Date After  in YYYYMMDD (now + stepDays)
   def _set_path(self,path):
     if path != '': #Base constructor
-      now = int(time.time())    
-      t = path.replace('%tsb', str((now - 86400) * int(self.stepHours)) )
-      t = t.replace('%tsa',    str((now + 86400) * int(self.stepHours)) )
+      now = round(time.time() * 1000)
+      t = path.replace('%tsb', str((now - 3600000) * int(self.stepHours)) )
+      t = t.replace('%tsa',    str((now + 3600000) * int(self.stepHours)) )
       t = t.replace('%db', (date.today() - timedelta(int(self.stepDays))).strftime('%Y%m%d'))
       t = t.replace('%da', (date.today() + timedelta(int(self.stepDays))).strftime('%Y%m%d'))
       self._path = t  
