@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from greentest.loader import load_config, get_class
+import greentest
 from greentest.test import  TestSet, AbstractTest
 from optparse import OptionParser, OptionGroup
 import logging
@@ -21,14 +22,18 @@ def logfile_arg():
 
 
 if __name__ == '__main__':
-  parser = OptionParser(usage="%prog [-t] [-l logfile] [-v (debug,info,warn,error)] <testset>",
+  parser = OptionParser(usage="%prog [-t] [-l logfile] [-s hostname] [-p port] [-v (debug,info,warn,error)] <testset>",
                         description="A script for running automated functional tests against the BigSense Web Service",
-                        version="%prog 0.1", epilog='Copyright 2011 Sumit Khanna. GNU GPLv3. PenguinDreams.org')
+                        version="%prog 0.1", epilog='Copyright 2015 BigSense. GNU GPLv3. BigSense.io')
   parser.add_option('-t','--trace',action='store_true',dest='trace',help='Display all request and response information for each test')
+  serviceOpts = OptionGroup(parser, 'Service Options')
+  serviceOpts.add_option('-s','--service', type='string', help='hostname to webservice [default: localhost]', metavar='hostname', default='localhost')
+  serviceOpts.add_option('-p','--port', type='int', help='port for webservice [default: 8080]', metavar='port', default=8080)
   loggingOpts = OptionGroup(parser,'Logging Options')
   loggingOpts.add_option('-l','--logfile',action='callback',callback=logfile_arg(),help='store output to logfile [default: {0}_yyyy-mm-dd-hhmmss.log]'.format(argv[0]),metavar='FILE',dest='logfile')
   loggingOpts.add_option('-v','--level',type='string',help='log level: trace,debug,info,error [default: info]',metavar='level',default='info')
   parser.add_option_group(loggingOpts)
+  parser.add_option_group(serviceOpts)
 
   (options, args) = parser.parse_args()
 
@@ -36,7 +41,11 @@ if __name__ == '__main__':
     parser.error('You must specify a test set')
   else:
 
-    #-l option
+    # custom host/port
+    greentest.hostname = options.service
+    greentest.port = options.port
+
+    # -l option
     if options.level.upper() in ['DEBUG','INFO','WARN','ERROR']:
       lvl = getattr(logging, options.level.upper())
       logging.getLogger('').setLevel(lvl)
