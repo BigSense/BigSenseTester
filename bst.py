@@ -22,7 +22,7 @@ def logfile_arg():
 
 if __name__ == '__main__':
   parser = OptionParser(usage="%prog [-t] [-l logfile] [-v (debug,info,warn,error)] <testset>",
-                        description="A script for running automated functional tests against the GreenOven Web Service",
+                        description="A script for running automated functional tests against the BigSense Web Service",
                         version="%prog 0.1", epilog='Copyright 2011 Sumit Khanna. GNU GPLv3. PenguinDreams.org')
   parser.add_option('-t','--trace',action='store_true',dest='trace',help='Display all request and response information for each test')
   loggingOpts = OptionGroup(parser,'Logging Options')
@@ -42,12 +42,6 @@ if __name__ == '__main__':
       logging.getLogger('').setLevel(lvl)
     else:
       parser.error('Invalid log level: {1}'.format(options.level))
-
-      #logger setup
-      #if options.verbose is True:
-      #  console = logging.StreamHandler()
-      #  console.setFormatter(logging.Formatter('%(asctime)s: %(message)s'))
-      #  logging.getLogger('').addHandler(console)
 
     if options.logfile is not None:
       logfile = logging.FileHandler(options.logfile)
