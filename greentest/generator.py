@@ -44,7 +44,7 @@ class XMLDataGenerator(AbstractGenerator):
   
   def generate_data(self):
     doc = Document()
-    root = doc.createElement('AgraData')
+    root = doc.createElement('sensedata')
 
     for i in range(int(self.numPackages)):
       pack = doc.createElement('package')

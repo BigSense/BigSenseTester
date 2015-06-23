@@ -214,7 +214,6 @@ class MultiFormatTestSet(TestSet):
     self.stepDays  = 1
 
     #Formats
-    self.flatXMLSupported = True
     self.tableHTMLSupported = True
     self.csvSupported = True
     self.tabSupported = True
@@ -245,7 +244,7 @@ class MultiFormatTestSet(TestSet):
   def add_conversions(self,test,type):
     """Takes a single Abstract Test and returns a list of tests for
     specific conversions based on the unitsSupported and timezoneSupported
-    members. Type should be csv,txt or flat.xml.
+    members. Type should be csv,txt.
     Returned list does include original test"""
     if bool(self.unitsSupported):
       pass
@@ -257,21 +256,6 @@ class MultiFormatTestSet(TestSet):
 
     self.tests = []
 
-    if bool(self.flatXMLSupported):
-      t = self._copy_base_test('flat.xml')
-      xc = NumberXMLElementsSuccessCondition()
-
-      xc.searchXPath = './/row[1]/*'
-      xc.numElements = self.numColumns
-      if int(self.numColumns) != -1 : t.successConditions.append(xc)
-
-      xr = NumberXMLElementsSuccessCondition()
-      xr.searchXPath = './/row'
-      xr.numElements = self.numRows
-      if int(self.numRows) != -1 : t.successConditions.append(xr)
-
-      t.successConditions.append(WellFormedXMLSuccessCondition())
-      self.tests.append(t)
     if bool(self.tableHTMLSupported):
       t = self._copy_base_test('table.html')
       t.successConditions.append(HTMLResponseSuccessCondition())
@@ -299,7 +283,7 @@ class MultiFormatTestSet(TestSet):
       if int(self.numColumns) != -1: t.successConditions.append(c)
       self.tests.append(t)
     if bool(self.agraXMLSupported):
-      t = self._copy_base_test('agra.xml')
+      t = self._copy_base_test('sense.xml')
       t.successConditions.append(WellFormedXMLSuccessCondition())
       self.tests.append(t)
 
