@@ -233,7 +233,12 @@ class MultiFormatTestSet(TestSet):
       t.port = self.baseTest.port
       t.stepHours = self.stepHours
       t.stepDays = self.stepDays
-      t.path = self.basePath + '.' + extension
+
+      if '?' in self.basePath:
+          t.path = '.{}?'.format(extension).join(self.basePath.split('?'))
+      else:
+          t.path = '{}.{}'.format(self.basePath, extension)
+          
       t.description = '{0} [{1}]'.format(self.name,extension)
       ok = StatusSuccessCondition()
       ok.code = 200
