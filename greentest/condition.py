@@ -8,6 +8,7 @@ from xml.sax import parseString
 from xml.sax._exceptions import SAXParseException
 from xml.etree import ElementTree
 from html.parser import HTMLParser,HTMLParseError
+import six
 
 class AbstractSuccessCondition:
   
@@ -102,14 +103,23 @@ class NumberXMLElementsSuccessCondition(AbstractSuccessCondition):
 
 class BodyTextSuccessCondition(AbstractSuccessCondition):
   
-  description = property(lambda self: 'Search Body Text: "{0}"'.format(self.searchText))
+  description = property(lambda self: 'Search Body Text [{0}]: "{1}"'.format('present' if self._present() else 'absent', self.searchText))
 
   def __init__(self):
     AbstractSuccessCondition.__init__(self)
     self.searchText = ''
+    self.present = True
   
   def run_check(self,test):
-    return self.searchText in str(test.resultBody,encoding='utf8')
+    search = self.searchText
+    body = str(test.resultBody,encoding='utf8')
+
+    return search in body if self._present() else search not in body
+
+  def _present(self):
+    if isinstance(self.present, six.string_types) and self.present.lower() == 'false':
+        return False
+    return True 
   
   
 class NumberRowsSuccessCondition(AbstractSuccessCondition):
