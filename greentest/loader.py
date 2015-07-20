@@ -3,6 +3,7 @@ import configparser
 import logging
 import os
 import glob
+import ast
 
 config = configparser.RawConfigParser()
 #remove case insensitivity 
@@ -35,7 +36,10 @@ def set_args(object,key,value):
         else:            
           arg = get_class(opt)          
     else:
-      arg = value
+      if value.startswith('{'):
+          arg = ast.literal_eval(value)
+      else:
+          arg = value
     
     logging.debug('Setting attribute {0} to {1} for class {2}'.format(key,arg,object))
     setattr(object,key,arg)
