@@ -41,8 +41,10 @@ class XMLDataGenerator(AbstractGenerator):
     self.numPackages = 1
     self.sensors = []
     self.name = "FunctionalTester"
+    self.location = None
   
   def generate_data(self):
+    """Creates Sense XML. Location None or {x, y, accuracy, altitude}"""
     doc = Document()
     root = doc.createElement('sensedata')
 
@@ -52,6 +54,14 @@ class XMLDataGenerator(AbstractGenerator):
       #We want time as a long as number of milisecongs
       pack.setAttribute("timestamp", '{0}'.format(round(time.time()* 1000)))
       pack.setAttribute("id",self.name)
+
+      if self.location:
+        loc = doc.createElement('location')
+        loc.setAttribute('x', str(self.location['x']))
+        loc.setAttribute('y', str(self.location['y']))
+        loc.setAttribute('accuracy', str(self.location['accuracy']))
+        loc.setAttribute('altitude', str(self.location['altitude']))
+        pack.appendChild(loc)
   
       sens = doc.createElement('sensors')
   
