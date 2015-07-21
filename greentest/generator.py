@@ -57,8 +57,8 @@ class XMLDataGenerator(AbstractGenerator):
 
       if self.location:
         loc = doc.createElement('location')
-        loc.setAttribute('x', str(self.location['x']))
-        loc.setAttribute('y', str(self.location['y']))
+        loc.setAttribute('longitude', str(self.location['longitude']))
+        loc.setAttribute('latitude', str(self.location['latitude']))
         loc.setAttribute('accuracy', str(self.location['accuracy']))
         loc.setAttribute('altitude', str(self.location['altitude']))
         pack.appendChild(loc)
