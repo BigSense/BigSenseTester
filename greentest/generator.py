@@ -56,12 +56,13 @@ class XMLDataGenerator(AbstractGenerator):
       pack.setAttribute("id",self.name)
 
       if self.location:
+        gps = doc.createElement('gps')
         loc = doc.createElement('location')
         loc.setAttribute('longitude', str(self.location['longitude']))
         loc.setAttribute('latitude', str(self.location['latitude']))
-        loc.setAttribute('accuracy', str(self.location['accuracy']))
         loc.setAttribute('altitude', str(self.location['altitude']))
-        pack.appendChild(loc)
+        gps.appendChild(loc)
+        pack.appendChild(gps)
   
       sens = doc.createElement('sensors')
   
