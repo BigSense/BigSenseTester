@@ -42,6 +42,12 @@ class XMLDataGenerator(AbstractGenerator):
     self.sensors = []
     self.name = "FunctionalTester"
     self.location = None
+
+  def _loc_not_empty(self, ele):
+    return ele in self.location and self.location[ele] != ''
+
+  def _location(self, ele):
+    return str(self.location[ele]) if ele in self.location else '' 
   
   def generate_data(self):
     """Creates Sense XML. Location None or {x, y, accuracy, altitude}"""
@@ -57,11 +63,31 @@ class XMLDataGenerator(AbstractGenerator):
 
       if self.location:
         gps = doc.createElement('gps')
-        loc = doc.createElement('location')
-        loc.setAttribute('longitude', str(self.location['longitude']))
-        loc.setAttribute('latitude', str(self.location['latitude']))
-        loc.setAttribute('altitude', str(self.location['altitude']))
-        gps.appendChild(loc)
+
+        if self._loc_not_empty('longitude') or self._loc_not_empty('latitude') or self._loc_not_empty('altitude'):
+          loc = doc.createElement('location')
+          loc.setAttribute('longitude', self._location('longitude'))
+          loc.setAttribute('latitude', self._location('latitude'))
+          loc.setAttribute('altitude', self._location('altitude'))
+          gps.appendChild(loc)
+
+        if self._loc_not_empty('speed') or self._loc_not_empty('track') or self._loc_not_empty('climb'):
+          delta = doc.createElement('delta')
+          delta.setAttribute('speed', self._location('speed'))
+          delta.setAttribute('track', self._location('track'))
+          delta.setAttribute('climb', self._location('climb'))
+          gps.appendChild(delta)
+
+        if self._loc_not_empty('longitude_error') or self._loc_not_empty('latitude_error') or self._loc_not_empty('altitude_error') or self._loc_not_empty('speed_error') or self._loc_not_empty('track_error') or self._loc_not_empty('climb_error'):
+            acc = doc.createElement('accuracy')
+            acc.setAttribute('longitude_error', self._location('longitude_error'))
+            acc.setAttribute('latitude_error', self._location('latitude_error'))
+            acc.setAttribute('altitude_error', self._location('altitude_error'))
+            acc.setAttribute('speed_error', self._location('speed_error'))
+            acc.setAttribute('climb_error', self._location('climb_error'))
+            acc.setAttribute('track_error', self._location('track_error'))
+            gps.appendChild(acc)
+        
         pack.appendChild(gps)
   
       sens = doc.createElement('sensors')
