@@ -99,7 +99,47 @@ class NumberXMLElementsSuccessCondition(AbstractSuccessCondition):
       return len(ElementTree.fromstring(test.resultBody).findall(self.searchXPath)) == int(self.numElements)
     except ElementTree.ParseError:
       return False
-    
+
+
+class FieldValueSuccessCondition(AbstractSuccessCondition):
+
+  description = property(lambda self: '{0} Field {1} is "{2}" for all rows'.format(self._fmt_delimiter(), self.field, self.value))
+
+  def __init__(self):
+    AbstractSuccessCondition.__init__(self)
+    self.field = 'Unimplemented'
+    self.value = ''
+    self._delimiter = '\t'
+
+  def _str_to_delimiter(self, v):
+    if v.strip().lower() == 'tab':
+      self._delimiter = '\t'
+    elif v.strip().lower() == 'comma':
+      self._delimiter = ','
+    else:
+      self._delimiter = v.strip().lower()
+
+  def _fmt_delimiter(self):
+    if self._delimiter == '\t':
+      return 'Tab Delimited'
+    if self._delimiter == ',':
+      return 'Comma Delimited'
+    return self._delimiter
+
+  delimiter = property(_fmt_delimiter, _str_to_delimiter)
+
+  def run_check(self, test):
+    body = str(test.resultBody, encoding='utf8').split('\n')
+    headers = body[:1][0].split(self._delimiter)    
+    for row in body[1:]:
+      if row.strip() != '':
+        result = row.split(self._delimiter)[headers.index(self.field)]
+        if result == '' and self.value == '':
+          return True
+        if float(result) != float(self.value):
+          return False
+    return True
+
 
 class BodyTextSuccessCondition(AbstractSuccessCondition):
   
