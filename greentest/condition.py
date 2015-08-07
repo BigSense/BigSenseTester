@@ -160,7 +160,21 @@ class BodyTextSuccessCondition(AbstractSuccessCondition):
     if isinstance(self.present, six.string_types) and self.present.lower() == 'false':
         return False
     return True 
-  
+
+
+class MimeTypeSuccessCondition(AbstractSuccessCondition):
+
+  description = property(lambda self: "ContentType: {0}".format(self.mimeType))
+
+  def __init__(self):
+    AbstractSuccessCondition.__init__(self)
+    self.mimeType = 'text/plain'
+
+  def run_check(self, test):
+    for hd,val in test.resultHeaders:
+      if hd == 'Content-Type' and val == self.mimeType:
+        return True 
+    return False 
   
 class NumberRowsSuccessCondition(AbstractSuccessCondition):
   

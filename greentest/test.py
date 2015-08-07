@@ -10,7 +10,7 @@ from datetime import date, timedelta
 import sys
 import greentest
 from greentest.condition import StatusSuccessCondition, WellFormedXMLSuccessCondition, HTMLResponseSuccessCondition, NumberColumnsSuccessCondition,\
-  NumberRowsSuccessCondition, NumberXMLElementsSuccessCondition
+  NumberRowsSuccessCondition, NumberXMLElementsSuccessCondition, MimeTypeSuccessCondition
 
 class TestSet:
 
@@ -256,6 +256,10 @@ class MultiFormatTestSet(TestSet):
     if bool(self.timezoneSupported):
       pass
 
+  def _add_mime(self, mime, test):
+    ms = MimeTypeSuccessCondition()
+    ms.mimeType = mime
+    test.successConditions.append(ms)
 
   def run_tests(self):
 
@@ -263,10 +267,12 @@ class MultiFormatTestSet(TestSet):
 
     if bool(self.tableHTMLSupported):
       t = self._copy_base_test('table.html')
+      self._add_mime('text/html', t)
       t.successConditions.append(HTMLResponseSuccessCondition())
       self.tests.append(t)
     if bool(self.csvSupported):
       t = self._copy_base_test('csv')
+      self._add_mime('text/csv', t)
       c = NumberColumnsSuccessCondition()
       c.delimiter = 'comma'
       c.numColumns = self.numColumns
@@ -278,6 +284,7 @@ class MultiFormatTestSet(TestSet):
       self.tests.append(t)
     if bool(self.tabSupported):
       t = self._copy_base_test('txt')
+      self._add_mime('text/tab-separated-values', t)
       c = NumberColumnsSuccessCondition()
       c.delimiter = 'tab'
       c.numColumns = self.numColumns
