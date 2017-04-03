@@ -1,0 +1,13 @@
+FROM centos:7
+
+ENV ACCEPT_EULA=Y
+RUN curl https://packages.microsoft.com/config/rhel/7/prod.repo > /etc/yum.repos.d/msprod.repo
+RUN yum -y update && yum -y install mssql-tools gettext
+RUN ln -sfn /opt/mssql-tools/bin/sqlcmd /usr/bin/sqlcmd
+RUN ln -sfn /opt/mssql-tools/bin/bcp /usr/bin/bcp
+
+RUN mkdir -p /opt/bigsense
+COPY mssql-db-init.sql /opt/bigsense
+COPY mssql-bigsense-init.sh /opt/bigsense
+
+CMD ["/opt/bigsense/mssql-bigsense-init.sh"]
