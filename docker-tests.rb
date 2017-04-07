@@ -18,6 +18,23 @@ def sense_containers
   }
 end
 
+def database_container(name, image, port, env)
+  {
+   name => {
+     'type' => 'docker',
+     'image' => image,
+     'container_args' => {
+       'Env' => env,
+       'ExposedPorts' => {"#{port}/tcp" => {}},
+       'HostConfig' => {
+         'PortBindings' => {
+           "#{port}/tcp" => [{ 'HostPort' => port }]
+         }
+       }
+     }
+   }
+end
+
 def container_config
   {
    'mysql' => {
