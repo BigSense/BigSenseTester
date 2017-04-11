@@ -3,6 +3,7 @@
 require 'docker'
 require 'logger'
 require 'socket'
+require 'optparse'
 
 $log = Logger.new(STDOUT)
 
@@ -142,6 +143,25 @@ def clean_containers
     end
   }
 end
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: docker-tests.rb [-r] [-b] [-f <fixture>]"
+
+  opts.on("-r", "--rebuild", "Rebuild Entire Docker Environment") do |r|
+    options[:rebuild] = r
+  end
+
+  opts.on("-b", "--bigsense", "Rebuild BigSense Containers") do |bs|
+    options[:build_bigsense] = bs
+  end
+
+  opts.on("-f", "--fixture FIXTURE", "Initilize DB containers with fixture") do |f|
+    options[:fixture] = f
+  end
+
+end.parse!
+
 
 clean_containers()
 create_containers(db_containers)
