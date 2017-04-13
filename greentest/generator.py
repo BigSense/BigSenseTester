@@ -116,7 +116,7 @@ class OneWireXMLDataGenerator(XMLDataGenerator):
   
   def __init__(self):
     XMLDataGenerator.__init__(self)     
-    self.name = "OneWireTester"
+    self.name = "BigSenseTester"
     self.sensors = [{'id':'AGEWA99B','type':'Temperature','units':'C','data':'34'},
         {'id':'WTR001AD-V','type':'Volume','units':'ml','data':'50'},
         {'id':'WTR001AD-FR','type':'FlowRate','units':'ml/s','data':'2.45'}]

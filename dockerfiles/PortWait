@@ -1,0 +1,10 @@
+FROM alpine:3.5
+
+RUN apk add --update bash && rm -rf /var/cache/apk/*
+
+COPY wait-for-it.sh /tmp
+
+ENV HOST localhost
+ENV PORT 80
+
+ENTRYPOINT /tmp/wait-for-it.sh $HOST:$PORT -t 0
