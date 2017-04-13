@@ -5,6 +5,13 @@ require 'logger'
 require 'socket'
 require 'optparse'
 
+class String
+def red;            "\033[91m#{self}\033[0m" end
+def green;          "\033[92m#{self}\033[0m" end
+def blue;           "\033[94m#{self}\033[0m" end
+def magenta;        "\033[95m#{self}\033[0m" end
+end
+
 $log = Logger.new(STDOUT)
 
 def sense_containers
@@ -134,6 +141,15 @@ def launch_containers(containers, wait = false)
   }
 end
 
+def print_results(results)
+  puts("\n\nIntegration Test Results".blue)
+  puts("--------------------------------\n")
+  results.map { |name,result|
+    out = '['.blue + (result ? "  ok  ".green : " fail ".red) + ']'.blue
+    puts('%-25s %s' %["#{name} Tests:".magenta, out])
+  }
+end
+
 def clean_containers
   sense_containers { |c|
     begin
@@ -147,7 +163,7 @@ end
 
 options = {}
 OptionParser.new do |opts|
-  opts.banner = "Usage: docker-tests.rb [-r] [-b] [-f <fixture>]"
+  opts.banner = "Usage: docker-tests.rb [-r] [-b] [-t]"
 
   opts.on("-r", "--rebuild", "Rebuild Entire Docker Environment") do |r|
     options[:rebuild] = r
@@ -157,27 +173,31 @@ OptionParser.new do |opts|
     options[:build_bigsense] = bs
   end
 
-  opts.on("-f", "--fixture FIXTURE", "Initilize DB containers with fixture") do |f|
-    options[:fixture] = f
+  opts.on("-t", "--tests", "Run Big Sense Tests") do |tests|
+    options[:tests] = tests
   end
 
 end.parse!
 
+if options[:rebuild]
+  clean_containers()
+  launch_containers(db_containers)
+  wait_for_service('db-mysql', 3306)
+  wait_for_service('db-postgres', 5432)
+  wait_for_service('db-mssql', 1433)
+  launch_containers(bs_containers)
+  wait_for_service('tomcat-mysql', 9090)
+  wait_for_service('tomcat-postgres', 9091)
+  wait_for_service('tomcat-mssql', 9092)
+  launch_containers(fixtures_container, true)
+end
 
-clean_containers()
-launch_containers(db_containers)
-wait_for_service('db-mysql', 3306)
-wait_for_service('db-postgres', 5432)
-wait_for_service('db-mssql', 1433)
-launch_containers(bs_containers)
-wait_for_service('tomcat-mysql', 9090)
-wait_for_service('tomcat-postgres', 9091)
-wait_for_service('tomcat-mssql', 9092)
-launch_containers(fixtures_container, true)
-bs_mysql = system('./bst.py BigSenseMasterTestSet -s localhost -p 9090')
-bs_pgsql = system('./bst.py BigSenseMasterTestSet -s localhost -p 9091')
-bs_mssql = system('./bst.py BigSenseMasterTestSet -s localhost -p 9092')
-
-puts("MySQL Tests: #{bs_mysql}")
-puts("Postgres Tests: #{bs_pgsql}")
-puts("MS SQL Tests: #{bs_mssql}")
+if options[:tests]
+  print_results(
+    {
+      "MySQL" => system('./bst.py BigSenseMasterTestSet -s localhost -p 9090'),
+      "Postgres" => system('./bst.py BigSenseMasterTestSet -s localhost -p 9091'),
+      "MS SQL" => system('./bst.py BigSenseMasterTestSet -s localhost -p 9092')
+    }
+  )
+end
