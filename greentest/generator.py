@@ -9,33 +9,33 @@ import base64
 
 
 class AbstractGenerator:
-  
+
   def __init__(self):
     pass
-  
+
   def set_result_infomration(self, status, headers, body):
     self._status = status
     self._headers = headers
     self._body = body
-  
+
   def generate_data(self):
     return "Unimplemented"
 
 class RegistrationDataGenerator(AbstractGenerator):
-  
+
   def __init__(self):
     AbstractGenerator.__init__(self)
-    
+
   def generate_date(self):
     doc = Document()
     root = doc.createElement('AltaRegister')
-    
+
     doc.appendChild(root)
     return doc.toprettyxml(indent=' ')
-    
+
 
 class XMLDataGenerator(AbstractGenerator):
-  
+
   def __init__(self):
     AbstractGenerator.__init__(self)
     self.numPackages = 1
@@ -47,8 +47,8 @@ class XMLDataGenerator(AbstractGenerator):
     return ele in self.location and self.location[ele] != ''
 
   def _location(self, ele):
-    return str(self.location[ele]) if ele in self.location else '' 
-  
+    return str(self.location[ele]) if ele in self.location else ''
+
   def generate_data(self):
     """Creates Sense XML. Location None or {x, y, accuracy, altitude}"""
     doc = Document()
@@ -87,11 +87,11 @@ class XMLDataGenerator(AbstractGenerator):
             acc.setAttribute('climb_error', self._location('climb_error'))
             acc.setAttribute('track_error', self._location('track_error'))
             gps.appendChild(acc)
-        
+
         pack.appendChild(gps)
-  
+
       sens = doc.createElement('sensors')
-  
+
       for s in self.sensors:
         senNode = doc.createElement('sensor')
         if s['id'] != '':
@@ -99,23 +99,23 @@ class XMLDataGenerator(AbstractGenerator):
         senNode.setAttribute('type',s['type'])
         senNode.setAttribute('units',s['units'])
         senNode.setAttribute('timestamp',str(round(time.time()*1000)))
-        
+
         ddata = doc.createElement('data')
         ddata.appendChild(doc.createTextNode(s['data']))
-  
+
         senNode.appendChild(ddata)
         sens.appendChild(senNode)
 
       pack.appendChild(sens)
       root.appendChild(pack)
-    
+
     doc.appendChild(root)
     return doc.toxml()
-  
+
 class OneWireXMLDataGenerator(XMLDataGenerator):
-  
+
   def __init__(self):
-    XMLDataGenerator.__init__(self)     
+    XMLDataGenerator.__init__(self)
     self.name = "BigSenseTester"
     self.sensors = [{'id':'AGEWA99B','type':'Temperature','units':'C','data':'34'},
         {'id':'WTR001AD-V','type':'Volume','units':'ml','data':'50'},
@@ -123,17 +123,17 @@ class OneWireXMLDataGenerator(XMLDataGenerator):
 
 
 class PhotoXMLDataGenerator(XMLDataGenerator):
-  
+
   def __init__(self):
     XMLDataGenerator.__init__(self)
     self.name = 'PhotoTester'
     self.id = ''
     self.photoFile = None
-    
+
   def generate_data(self):
     fd = open(self.photoFile,'rb')
     image = fd.read()
     fd.close()
     encodedImage = base64.encodebytes(image).decode("utf-8")
     self.sensors = [{'id':self.id,'type':'Photo','units':'NPhotoU','data':encodedImage}]
-    return XMLDataGenerator.generate_data(self)    
+    return XMLDataGenerator.generate_data(self)
