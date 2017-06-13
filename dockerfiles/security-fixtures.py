@@ -27,6 +27,9 @@ with open('sig-fixture.sql', 'r') as template:
 with open(RELAY_TMP, 'w') as out:
     for r in relays:
         out.write(sql.replace('%relay%', r))
+    for r in relays:
+        for f in ['XML', 'JSON']:
+            out.write(sql.replace('%relay%', '{}{}'.format(r, f)))
 
 for db,port in dbs.iteritems():
     while True:
