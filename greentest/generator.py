@@ -29,19 +29,6 @@ class AbstractGenerator:
     return str(self.location[ele]) if ele in self.location else ''
 
 
-class RegistrationDataGenerator(AbstractGenerator):
-
-  def __init__(self):
-    AbstractGenerator.__init__(self)
-
-  def generate_date(self):
-    doc = Document()
-    root = doc.createElement('AltaRegister')
-
-    doc.appendChild(root)
-    return doc.toprettyxml(indent=' ')
-
-
 class JSONDataGenerator(AbstractGenerator):
 
   def __init__(self):
@@ -173,20 +160,3 @@ class OneWireXMLDataGenerator(XMLDataGenerator):
     self.sensors = [{'id':'AGEWA99B','type':'Temperature','units':'C','data':'34'},
         {'id':'WTR001AD-V','type':'Volume','units':'ml','data':'50'},
         {'id':'WTR001AD-FR','type':'FlowRate','units':'ml/s','data':'2.45'}]
-
-
-class PhotoXMLDataGenerator(XMLDataGenerator):
-
-  def __init__(self):
-    XMLDataGenerator.__init__(self)
-    self.name = 'PhotoTester'
-    self.id = ''
-    self.photoFile = None
-
-  def generate_data(self):
-    fd = open(self.photoFile,'rb')
-    image = fd.read()
-    fd.close()
-    encodedImage = base64.encodebytes(image).decode("utf-8")
-    self.sensors = [{'id':self.id,'type':'Photo','units':'NPhotoU','data':encodedImage}]
-    return XMLDataGenerator.generate_data(self)
