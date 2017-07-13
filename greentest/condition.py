@@ -157,8 +157,12 @@ class FieldValueSuccessCondition(AbstractSuccessCondition):
                 result = row.split(self._delimiter)[headers.index(self.field)]
                 if result == '' and self.value == '':
                     return True
-                if float(result) != float(self.value):
-                    return False
+                try:
+                    if float(result) != float(self.value):
+                        return False
+                except ValueError:
+                    if result != self.value:
+                        return False
         return True
 
 

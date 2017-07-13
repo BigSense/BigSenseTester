@@ -9,8 +9,10 @@ import time
 from datetime import date, timedelta
 import sys
 import greentest
+from copy import copy
 from greentest.condition import StatusSuccessCondition, WellFormedXMLSuccessCondition, HTMLResponseSuccessCondition,\
-    NumberColumnsSuccessCondition, NumberRowsSuccessCondition, NumberXMLElementsSuccessCondition, MimeTypeSuccessCondition
+    NumberColumnsSuccessCondition, NumberRowsSuccessCondition, NumberXMLElementsSuccessCondition, MimeTypeSuccessCondition, \
+    FieldValueSuccessCondition
 
 
 class TestSet:
@@ -211,18 +213,16 @@ class MultiFormatTestSet(TestSet):
         self.tabSupported = True
         self.agraXMLSupported = False
 
-        # Conversions
-        self.unitsSupported = True
-        self.timezoneSupported = True
-
         # Test Results
         self.numColumns = -1
         self.numRows = -1
+        self.fieldValueMap = {}
 
     def _copy_base_test(self, extension):
         t = AbstractTimeQueryTest() if bool(self.timeQueryPath) else AbstractTest()
         t.host = self.baseTest.host
         t.port = self.baseTest.port
+        t.successConditions = copy(self.baseTest.successConditions)
         t.stepHours = self.stepHours
         t.stepDays = self.stepDays
 
@@ -231,22 +231,23 @@ class MultiFormatTestSet(TestSet):
         else:
             t.path = '{}.{}'.format(self.basePath, extension)
 
+        if extension == 'csv' or extension == 'txt':
+            for field, value in self.fieldValueMap.items():
+                vcheck = FieldValueSuccessCondition()
+                vcheck.field = field
+                vcheck.value = value
+                if extension == 'txt':
+                    vcheck.delimiter = 'tab'
+                if extension == 'csv':
+                    vcheck.delimiter = 'comma'
+                t.successConditions.append(vcheck)
+
         t.description = '{0} [{1}]'.format(self.name, extension)
         ok = StatusSuccessCondition()
         ok.code = 200
         ok.status = 'OK'
         t.successConditions.append(ok)
         return t
-
-    def add_conversions(self, test, type):
-        """Takes a single Abstract Test and returns a list of tests for
-    specific conversions based on the unitsSupported and timezoneSupported
-    members. Type should be csv,txt.
-    Returned list does include original test"""
-        if bool(self.unitsSupported):
-            pass
-        if bool(self.timezoneSupported):
-            pass
 
     def _add_mime(self, mime, test):
         ms = MimeTypeSuccessCondition()

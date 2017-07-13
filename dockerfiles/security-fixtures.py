@@ -17,7 +17,8 @@ RELAY_TMP = '/tmp/sig-fixture-with-relays.sql'
 relays = ['BigSenseTester', 'GPSTestLocationZero', 'GPSTestLocationNegativeLatLong',
           'GPSTestLocationNegativeLat', 'GPSTestLocationNegativeLong', 'GPSTestAccuracyOnly',
           'GPSTestDeltaOnly', 'GPSTestAllNoClimbTrack', 'GPSTestLocationTen',
-          'GPSTestLocationHundred', 'GPSTestLocationThousand', 'GPSTestLocationOnly', 'GPSTestNoLocation']
+          'GPSTestLocationHundred', 'GPSTestLocationThousand', 'GPSTestLocationOnly', 'GPSTestNoLocation',
+          'KnownTimeTest']
 
 dbs = { 'mssql': 1433, 'postgres': 5432, 'mysql': 3306 }
 

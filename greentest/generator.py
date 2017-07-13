@@ -15,6 +15,7 @@ class AbstractGenerator:
         self.sensors = []
         self.name = "FunctionalTester"
         self.location = None
+        self.timestamp = '{0}'.format(round(time.time() * 1000))
 
     def set_result_infomration(self, status, headers, body):
         self._status = status
@@ -43,7 +44,7 @@ class JSONDataGenerator(AbstractGenerator):
 
         packages = []
         for i in range(int(self.numPackages)):
-            data = {'id': self.name, 'timestamp': '{0}'.format(round(time.time() * 1000))}
+            data = {'id': self.name, 'timestamp': self.timestamp}
 
             if self.location:
                 data['gps'] = {}
@@ -91,7 +92,7 @@ class XMLDataGenerator(AbstractGenerator):
             pack = doc.createElement('package')
 
             # We want time as a long as number of milisecongs
-            pack.setAttribute("timestamp", '{0}'.format(round(time.time() * 1000)))
+            pack.setAttribute("timestamp", self.timestamp)
             pack.setAttribute("id", self.name)
 
             if self.location:
