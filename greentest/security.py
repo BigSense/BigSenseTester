@@ -1,7 +1,6 @@
-__author__ = 'Sumit Khanna <sumit@penguindreams.org>'
-
 import rsa
 import base64
+__author__ = 'Sumit Khanna <sumit@penguindreams.org>'
 
 
 class AbstractSecurityManager(object):
