@@ -38,7 +38,6 @@ end
 def create_container(name, image, dockerfile, port, env, link)
   {
    name => {
-     'type' => 'docker',
      'image' => image,
      'image_args' => ({
        'dockerfile' => dockerfile
@@ -110,32 +109,29 @@ def launch_containers(containers, wait = false)
   containers.map { |name, params|
     # for all bigsense containers that don't exist yet
     if not existing_containers.any? { |e| e.info['Names'].any? { |n| n.split('-')[1] == name } }
-      case params['type']
-      when 'docker'
-        $log.info('Creating Image for %s' %[name])
-        image = case
-        when params.key?('image_args')
-          Docker::Image.build_from_dir('./dockerfiles', params['image_args']).id
-        when params.key?('image')
-          params['image']
-        else
-          $log.error('Missing image key')
-        end
-        $log.debug('Image Id %s' %[image])
-        c = Docker::Container.create(
-          {
-            'Image' => image,
-          'name' => 'bigsense-%s' %[name]
-          }.merge(params['container_args'])
-        )
-        c.start()
-        $log.info('bigsense-%s container started' %[name])
-        if wait
-          $log.info('Waiting for bigsense-%s to complete' %[name])
-          c.wait()
-          $log.info('bigsense-%s finished' %[name])
-          c.delete(:force => true)
-        end
+      $log.info('Creating Image for %s' %[name])
+      image = case
+      when params.key?('image_args')
+        Docker::Image.build_from_dir('./dockerfiles', params['image_args']).id
+      when params.key?('image')
+        params['image']
+      else
+        $log.error('Missing image key')
+      end
+      $log.debug('Image Id %s' %[image])
+      c = Docker::Container.create(
+        {
+          'Image' => image,
+        'name' => 'bigsense-%s' %[name]
+        }.merge(params['container_args'])
+      )
+      c.start()
+      $log.info('bigsense-%s container started' %[name])
+      if wait
+        $log.info('Waiting for bigsense-%s to complete' %[name])
+        c.wait()
+        $log.info('bigsense-%s finished' %[name])
+        c.delete(:force => true)
       end
     end
   }
