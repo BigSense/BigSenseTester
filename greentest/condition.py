@@ -7,7 +7,7 @@ from xml.sax.handler import ContentHandler
 from xml.sax import parseString
 from xml.sax._exceptions import SAXParseException
 from xml.etree import ElementTree
-from html.parser import HTMLParser, HTMLParseError
+from html.parser import HTMLParser
 import six
 import json
 
@@ -68,7 +68,7 @@ class ValidJSONSuccessCondition(AbstractSuccessCondition):
 
     def run_check(self, test):
         try:
-            json_object = json.loads(test.resultBody.decode('UTF-8'), ContentHandler())
+            json_object = json.loads(test.resultBody.decode('UTF-8'))
             return True
         except ValueError:
             return False
@@ -97,13 +97,13 @@ class HTMLResponseSuccessCondition(AbstractSuccessCondition):
         AbstractSuccessCondition.__init__(self)
 
     def run_check(self, test):
-        try:
+        #try:
             p = HTMLParser()
             p.feed(str(test.resultBody))
             p.close()
             return True
-        except HTMLParseError:
-            return False
+        #except HTMLParseError:
+        #    return False
 
 
 class NumberXMLElementsSuccessCondition(AbstractSuccessCondition):

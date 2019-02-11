@@ -1,9 +1,7 @@
 FROM golang
 
-RUN go get github.com/knq/usql
-RUN go install github.com/knq/usql
-RUN go get -u -tags pgx github.com/knq/usql
-
+RUN go get -u -tags pgx github.com/xo/usql
+RUN go install -tags pgx github.com/xo/usql
 COPY sig-fixture.sql /go
 COPY security-fixtures.py /go
 

@@ -57,7 +57,7 @@ def create_container(name, image, dockerfile, port, env, link)
 end
 
 def db_containers()
-  create_container('db-mysql', 'mysql/mysql-server:5.7', nil, '3306', [
+  create_container('db-mysql', 'mysql:5', nil, '3306', [
     'MYSQL_ROOT_PASSWORD=testroot', 'MYSQL_DATABASE=bigsense', 'MYSQL_USER=bigsense', 'MYSQL_PASSWORD=bigsense'
   ], nil).merge(
   create_container('db-postgres', nil, 'BigSensePostgres', '5432', [

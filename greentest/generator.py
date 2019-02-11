@@ -75,7 +75,6 @@ class JSONDataGenerator(AbstractGenerator):
             for s in self.sensors:
                 data['sensors'].append({'id': s['id'], 'type': s['type'], 'units': s['units'], 'data': s['data']})
             packages.append(data)
-
         return json.dumps(packages)
 
 
